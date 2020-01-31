@@ -20,6 +20,7 @@ class ProgressBar():
 		self.drawn_percent = None
 		self.bar = None
 		
+		# set up formatting for printing
 		# e.g. "{:.2f}{}"
 		self.percentage_format = "".join(["{:.", str(self.decimals), "f}{}"])
 		# e.g. "{}{: >38s}{}"
@@ -37,6 +38,7 @@ class ProgressBar():
 	
 	
 	def check_params(self):
+		"""Used during initialisation, ensures that that all parameters are valid and won't cause unexpected results"""
 		assert len(self.foreground_colour) == 3, "foreground_colour must be a tuple in form (r, g, b)"
 		assert max(self.foreground_colour) <= 255 and min(self.foreground_colour) >= 0, "foreground_colour values must be in range 0-255"
 		assert all(isinstance(val, int) for val in self.foreground_colour), "foreground_colour values must be ints"
@@ -46,16 +48,23 @@ class ProgressBar():
 		assert self.decimals >= 0, "decimals must be greater than or equal to 0"
 		assert isinstance(self.decimals, int), "decimals must be an int"
 		assert len(self.fill_character) == 1, "fill_character must have len 1"
-		# len(100) + whther there's a decimal
+		# len(100) + whether there's a decimal
 		max_percent_length = 3 + int(self.decimals > 0)
 		assert sum([len(self.start_bar), len(self.end_bar), len(self.percent_character), self.decimals, max_percent_length]) <= self.length, "length too short for other parameters"
 	
 	
 	def update(self, percent):
+		"""Takes a value from 0-100 and assigns it as the percentage
+		
+		
+		Keyword arguments:
+		percent -- the new percentage to set
+		"""
 		self.percent = percent / 100.0
 	
 	
 	def redraw(self):
+		"""Updates the bar that is printed"""
 		partial_foreground = self.interpolate_colour()
 		partial_background = tuple(back - value + fore for value, fore, back in zip(partial_foreground, self.foreground_colour, self.background_colour))
 		partial_character = "".join([self.ansi_text_colour(partial_foreground), self.ansi_background_colour(partial_background)])
@@ -74,24 +83,34 @@ class ProgressBar():
 	
 	
 	def interpolate_colour(self):
+		"""Applies interpolate_value to each part of the fore and background colours"""
 		return tuple(self.interpolate_value(back, fore) for fore, back in zip(self.foreground_colour, self.background_colour))
 	
 	
 	def interpolate_value(self, background, foreground):
+		"""Interpolate 2 values based on the percent and length
+		
+		Keyword arguments:
+		background -- the value taken from the background colour
+		foreground -- the value taken from the foreground colour (i.e. target)
+		"""
 		return int(self.percent * self.length % 1 * (foreground - background) + background)
 
 
 	@staticmethod
 	def ansi_default_terminal_colour():
+		"""ANSI code to reset the terminal colour to its default"""
 		return "\x1b[0m"
 
 
 	@staticmethod
 	def ansi_text_colour(rgb):
+		"""Convert the rgb tuple into an ANSI foreground colour"""
 		return "\x1b[38;2;{};{};{}m".format(*rgb)
 
 
 	@staticmethod
 	def ansi_background_colour(rgb):
+		"""Convert the rgb tuple into an ANSI background colour"""
 		return "\x1b[48;2;{};{};{}m".format(*rgb)
 
