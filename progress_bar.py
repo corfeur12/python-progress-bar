@@ -95,13 +95,3 @@ class ProgressBar():
 	def ansi_background_colour(rgb):
 		return "\x1b[48;2;{};{};{}m".format(*rgb)
 
-
-"""
-p = ProgressBar(fill_character="#", length=50, foreground_colour=(255,0,255), background_colour=(0,0,255))
-
-max = 1234567
-for i in range(max + 1):
-	p.percent = i/max
-	print(" " + str(p), end="\r")
-print()
-"""
